@@ -1,3 +1,6 @@
+require('dotenv').config({
+  path: 'variable.env',
+});
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
 const mongoose = require('mongoose');
@@ -5,9 +8,13 @@ const schema = require('./schema/schema');
 
 const app = express();
 
-mongoose.connect(process.env.DATABASE);
-mongoose.connection('once', () => {
-  console.log('connected to the database')
+mongoose.connect(process.env.DATABASE, { useNewUrlParser: true });
+mongoose.Promise = global.Promise // Tell Mongoose to use ES6 promises
+mongoose.connection.once('open', () => {
+  console.log('connected to the database ✔✔✔');
+});
+mongoose.connection.on('error', (err) => {
+	console.error(`🙅 🚫 🙅 🚫 🙅 🚫 🙅 🚫 → ${err.message}`)
 });
 
 app.use(
