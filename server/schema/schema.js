@@ -13,7 +13,6 @@ const {
   GraphQLNonNull,
 } = graphql;
 
-
 const BookType = new GraphQLObjectType({
   name: 'Book',
   fields: () => ({
@@ -40,14 +39,14 @@ const AuthorType = new GraphQLObjectType({
       type: new GraphQLList(BookType),
       resolve(parent, args) {
         // return _.filter(books, { authorId: parent.id });
-        return Book.find({ authorId: parent.id })
+        return Book.find({ authorId: parent.id });
       },
     },
   }),
 });
 
 const query = new GraphQLObjectType({
-  name: 'RootQuery',
+  name: 'Query',
   fields: {
     book: {
       type: BookType,
@@ -106,21 +105,52 @@ const mutation = new GraphQLObjectType({
       args: {
         name: { type: new GraphQLNonNull(GraphQLString) },
         genre: { type: new GraphQLNonNull(GraphQLString) },
-        authorId: { type: new GraphQLNonNull(GraphQLString) },
+        authorId: { type: new GraphQLNonNull(GraphQLID) },
       },
-      resolve(parent, args){
-        const {name, genre, authorId} =  args;
+      resolve(parent, args) {
+        const { name, genre, authorId } = args;
         const book = new Book({
           name,
           genre,
           authorId,
         });
         return book.save();
+      },
+    },
+    deleteBook: {
+      type: BookType,
+      args: {
+        id: { type: new GraphQLNonNull(GraphQLID) },
+      },
+      resolve(parent, args) {
+        const { id } = args;
+        return Book.findByIdAndDelete(id);
+      },
+    },
+    deleteAuthor: {
+      type: AuthorType,
+      args: {
+        id: { type: new GraphQLNonNull(GraphQLID) },
+      },
+      resolve(parent, args) {
+        const { id } = args;
+        return Author.findByIdAndDelete(id);
+      },
+    },
+    updateBook: {
+      type: BookType,
+      args: {
+        name: { type: GraphQLString },
+        genre: { type: GraphQLString },
+        id: { type: new GraphQLNonNull(GraphQLID) },
+      },
+      resolve(parent, args) {
+        const { id, genre, name } = args;
+        return Book.findByIdAndUpdate(id, {genre, name} );
       }
     }
   },
-
-})
+});
 
 module.exports = new GraphQLSchema({
   query,
